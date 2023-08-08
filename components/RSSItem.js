@@ -15,6 +15,14 @@ export default function RSSItem({ item, onClick }) {
   const { width } = useWindowDimensions();
   const maxImageSize = 240
 
+  const renderersProps = {
+    a: {
+      onPress(event, url, htmlAttribs, target) {
+        WebBrowser.openBrowserAsync(url);
+      },
+    }
+  }
+
   const tagStyles = {
     strong: {
       color: '#0B0B0B',
@@ -26,8 +34,9 @@ export default function RSSItem({ item, onClick }) {
       marginBottom: 0
     },
     a: {
-      color: '#0B0B0B',
-      fontWeight: '500',
+      color: '#5D9AE4',
+      fontWeight: 'bold',
+      textDecorationLine: 'none',
     },
     li: {
       marginLeft: 6,
@@ -56,6 +65,9 @@ export default function RSSItem({ item, onClick }) {
           console.log(result);
         }
       }}
+      onLongPress={() => {
+        alert(JSON.stringify(item))
+      }}
     >
       {item.id == 0 ?
         <View style={styles.container}>
@@ -76,6 +88,7 @@ export default function RSSItem({ item, onClick }) {
               contentWidth={width}
               baseStyle={baseStyle}
               tagsStyles={tagStyles}
+              renderersProps={renderersProps}
               enableExperimentalGhostLinesPrevention={true}
             />
           </View>
@@ -118,10 +131,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   avatar: {
-    width: 30,
-    height: 30,
-    borderRadius: 30,
-    borderWidth: 2,
+    width: 28,
+    height: 28,
+    marginEnd: 4,
+    borderRadius: 6,
+    borderWidth: 1,
     borderColor: '#f5f5f5',
     backgroundColor: "white",
   },

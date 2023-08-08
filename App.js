@@ -44,6 +44,21 @@ const rssLinks = [
   // Twitter，Instergram，youtube，微博
 ];
 
+const rssChannelIcons = [
+  "https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/a4/5b/fa/a45bfa09-6811-84ba-88d2-bbe45dd76f38/AppIcon-0-1x_U007emarketing-0-7-0-85-220.png/492x0w.webp", //少数派
+  "http://www.ruanyifeng.com/blog/images/person2.jpg", // 阮一峰
+  "https://is1-ssl.mzstatic.com/image/thumb/Purple126/v4/1f/9d/3a/1f9d3acb-e897-14fd-b605-12a196a26797/AppIcon-inter-0-0-1x_U007emarketing-0-0-0-4-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/492x0w.webp", // BiliBili - 每周热门
+  "https://play-lh.googleusercontent.com/xmwMB5MHEsbsV9OnF6aMmwZd_ZJCuEBZ5eO3W8fNi5-lgLmbK9iEszhE5XzCVsvOVg=w480-h960-rw", //V2EX - 最热
+  "https://play-lh.googleusercontent.com/xmwMB5MHEsbsV9OnF6aMmwZd_ZJCuEBZ5eO3W8fNi5-lgLmbK9iEszhE5XzCVsvOVg=w480-h960-rw", //V2EX - 创造
+  "https://play-lh.googleusercontent.com/xmwMB5MHEsbsV9OnF6aMmwZd_ZJCuEBZ5eO3W8fNi5-lgLmbK9iEszhE5XzCVsvOVg=w480-h960-rw", //V2EX - 好玩
+  "https://play-lh.googleusercontent.com/xmwMB5MHEsbsV9OnF6aMmwZd_ZJCuEBZ5eO3W8fNi5-lgLmbK9iEszhE5XzCVsvOVg=w480-h960-rw", //V2EX - 技术
+  "https://play-lh.googleusercontent.com/LdE9_6Khrk-4VVgdRtSWb92ZdQfVHoCUP9hmLlJxlZAgO1h-PipUSQs1HTpB3hxKOLM=w480-h960-rw", // HackerNews
+  "https://play-lh.googleusercontent.com/LdE9_6Khrk-4VVgdRtSWb92ZdQfVHoCUP9hmLlJxlZAgO1h-PipUSQs1HTpB3hxKOLM=w480-h960-rw", // HackerNews
+  "https://img.weixinyidu.com/170823/8328fddc.jpg_slt1", // 差评公众号
+  "https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/37/3d/31/373d31c1-bb21-6c70-9da3-907db91b49f6/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/492x0w.webp", // 游民星空
+  "https://is1-ssl.mzstatic.com/image/thumb/Purple126/v4/79/9b/12/799b127d-a704-1035-2b9f-d4f41d4510bf/AppIcon-0-0-1x_U007emarketing-0-0-0-6-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/492x0w.webp", // 豆瓣
+]
+
 async function requestRSSData(rssLink) {
   return new Promise((resolve, reject) => {
     fetch(rssLink)
@@ -62,7 +77,7 @@ async function requestRSSData(rssLink) {
 /**
  * 处理RSS原始数据
  */
-async function processRSSData(rss) {
+async function processRSSData(rss, avatarUrl) {
   let tempList = [];
   for (let i = 0; i < rss.items.length; i++) {
     let rssItem = rss.items[i];
@@ -89,20 +104,24 @@ async function processRSSData(rss) {
     // 提取前三个<p>标签的内容
     let pContents = ``;
     $('p').slice(0, 4).each((index, element) => {
-      pContents = pContents + ($(element).html()) + (index == 3 ? '' : `<br>`);
+      const content = $(element).html()
+      pContents = pContents + content + (content.length > 0 ? (index == 3 ? '' : `<br>`) : "");
     });
+    if (pContents.endsWith('<br>')) {
+      pContents = pContents.substring(0, pContents.lastIndexOf('<br>'));
+    }
 
     // 截取description前500个
     // let description = pText.length <= 500 ? pText : `${pText.substr(0, 500)}...`
     let description = pContents;
 
     // 请求头像
-    let avatarData = ''
-    try {
-      avatarData = await fetch(`https://source.unsplash.com/random/200x200?city`)
-    } catch (e) {
-      updateLog("avatarData fail ignore")
-    }
+    // let avatarData = { url: '' }
+    // try {
+    //   avatarData = await fetch(`https://source.unsplash.com/random/200x200?city`)
+    // } catch (e) {
+    //   updateLog("avatarData fail ignore")
+    // }
 
     // 请求首张图的宽高
     let imageSize = { width: 0, height: 0 }
@@ -123,7 +142,7 @@ async function processRSSData(rss) {
       title: rssItem.title,
       link: rssItem.links[0].url,
       author: rssItem.authors.length > 0 ? rssItem.authors[0].name : "blank",
-      avatarUrl: avatarData.url,
+      avatarUrl: avatarUrl,
       description: description,
       content: content,
       imageList: imageList,
@@ -255,7 +274,7 @@ export default function App() {
       updateLog("AsyncStorage.getItem(hasReadList) error")
     }
 
-    // console.log("readList.length ->", readList);
+    console.log("readList.length ->", readList);
     try {
       if (readList.size > 0) {
         await saveReadList({ list: Array.from(readList) });
@@ -273,7 +292,7 @@ export default function App() {
       try {
         let result = await requestRSSData(rssLinks[i]);
         console.log(result.items[0]);
-        let list = await processRSSData(result);
+        let list = await processRSSData(result, rssChannelIcons[i]);
         console.log("processRSSData-->", list.length);
         list.forEach((value) => {
           if (readList.has(value.title) == false) {
@@ -290,7 +309,7 @@ export default function App() {
     // 打乱数据
     tempList.sort(() => Math.random() - 0.5);
 
-    tempList.push({ id: 1 })
+    tempList.push({ id: 1, link: '-1' })
 
     saveData(tempList);
     setItemList(tempList);
@@ -366,6 +385,7 @@ export default function App() {
           onScroll={(event) => {
             curOffsetY = event.nativeEvent.contentOffset.y;
           }}
+          keyExtractor={(item, index) => item.link}
         />
       </View>
       <StatusBar style="auto" />
