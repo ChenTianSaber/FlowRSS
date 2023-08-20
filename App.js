@@ -41,6 +41,8 @@ const rssLinks = [
   "https://chentiansaber.top/wechat/ce/5b6871ddaf33fe067f22dbd3", // 差评公众号
   "https://chentiansaber.top/gamersky/news?limit=20", // 游民星空
   "https://rsshub.app/douban/list/subject_real_time_hotest", // 豆瓣
+  "https://chentiansaber.top/chouti/top/24",// 抽屉24最热
+  "https://chentiansaber.top/chouti/hot", // 抽屉最新最热
   // Twitter，Instergram，youtube，微博
 ];
 
@@ -57,6 +59,8 @@ const rssChannelIcons = [
   "https://img.weixinyidu.com/170823/8328fddc.jpg_slt1", // 差评公众号
   "https://is1-ssl.mzstatic.com/image/thumb/Purple116/v4/37/3d/31/373d31c1-bb21-6c70-9da3-907db91b49f6/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/492x0w.webp", // 游民星空
   "https://is1-ssl.mzstatic.com/image/thumb/Purple126/v4/79/9b/12/799b127d-a704-1035-2b9f-d4f41d4510bf/AppIcon-0-0-1x_U007emarketing-0-0-0-6-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/492x0w.webp", // 豆瓣
+  "https://dig.chouti.com/images/logo-c30a1a3941.png", // 抽屉
+  "https://dig.chouti.com/images/logo-c30a1a3941.png",
 ]
 
 async function requestRSSData(rssLink) {
@@ -193,6 +197,7 @@ export default function App() {
   const [itemList, setItemList] = useState([]);
 
   const [log, setLog] = useState("");
+  const [loading, setLoading] = useState(false);
   const [showLog, setShowLog] = useState(false)
 
   const [fontsLoaded] = useFonts({
@@ -243,6 +248,7 @@ export default function App() {
   }
 
   async function requestAll() {
+    setLoading(true)
     requestLog = ''
     // 滑动位置复位
     try {
@@ -313,6 +319,7 @@ export default function App() {
 
     saveData(tempList);
     setItemList(tempList);
+    setLoading(false)
   }
 
   const handleItemClick = () => {
@@ -358,11 +365,13 @@ export default function App() {
         paddingLeft: 16,
         paddingRight: 16
       }} onPress={() => {
-        requestAll()
-      }} onLongPress={() => {
-        setShowLog(true)
+        if (!loading) {
+          requestAll()
+        } else {
+          setShowLog(true)
+        }
       }}>
-        <Text style={{ fontFamily: 'Billabong', fontSize: 30 }}>{"Rssgram"}</Text>
+        <Text style={{ fontFamily: 'Billabong', fontSize: 30 }}>{loading ? "Loading" : "Rssgram"}</Text>
         <View style={{ flexDirection: 'row' }}>
           <Pressable style={{ width: 50, height: 50, justifyContent: 'center', alignItems: 'center' }} >
             <Image source={require('./res/readlater.png')} style={{ width: 24, height: 24 }} />
