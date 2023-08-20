@@ -5,15 +5,19 @@ import {
   Pressable,
   useWindowDimensions,
   Image,
+  Alert
 } from "react-native";
 import * as WebBrowser from "expo-web-browser";
 import moment from "moment";
 import RenderHtml from "react-native-render-html";
 import { useEffect, useState } from "react";
+import translate from 'google-translate-api-x';
 
 export default function RSSItem({ item, onClick }) {
   const { width } = useWindowDimensions();
   const maxImageSize = 240
+
+  const [isTranslate, setIsTranslate] = useState(false)
 
   const renderersProps = {
     a: {
@@ -65,9 +69,6 @@ export default function RSSItem({ item, onClick }) {
           console.log(result);
         }
       }}
-      onLongPress={() => {
-        alert(JSON.stringify(item))
-      }}
     >
       {item.id == 0 ?
         <View style={styles.container}>
@@ -105,6 +106,26 @@ export default function RSSItem({ item, onClick }) {
               uri: item.imageList[0],
             }}
           /> : null}
+          <View style={{ flexDirection: 'row', height: 30, marginTop: 12, alignItems: 'center' }}>
+            <Pressable onPress={async () => {
+              if (!isTranslate) {
+                setIsTranslate(true)
+                const transTitle = await translate(item.title, { to: 'zh-CN' })
+                const transDes = await translate(item.description, { to: 'zh-CN' })
+                setIsTranslate(false)
+                Alert.alert(transTitle.text, transDes.text, [
+                  { text: 'OK', onPress: () => { } },
+                ]);
+              }
+            }} style={{ width: 30, height: 30, justifyContent: 'center', alignItems: 'center' }} >
+              <Image source={isTranslate ? require('../res/loading.png') : require('../res/translate.png')} style={{ width: 20, height: 20 }} />
+            </Pressable>
+            <Pressable onPress={() => {
+              alert(JSON.stringify(item))
+            }} style={{ width: 30, height: 30, justifyContent: 'center', alignItems: 'center', marginLeft: 12 }} >
+              <Image source={require('../res/api.png')} style={{ width: 20, height: 20 }} />
+            </Pressable>
+          </View>
         </View> :
         <Pressable onPress={() => {
           onClick()
